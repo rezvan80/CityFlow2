@@ -1,7 +1,7 @@
 import cityflow
 print(cityflow.__version__)
 
-eng = cityflow.Engine("/content/CityFlow/examples/config.json", thread_num=1)
+eng = cityflow.Engine("/content/CityFlow2/examples/config.json", thread_num=1)
 print("CityFlow installed successfully!")
 
 import numpy as np
