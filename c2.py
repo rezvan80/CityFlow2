@@ -271,12 +271,40 @@ env.reset()
 
 student_model = PPO("MlpPolicy", env, verbose=1, tensorboard_log=session_log_dir)
 
+student_model2 = PPO("MlpPolicy", env, verbose=1, tensorboard_log=session_log_dir)
+
 TIMESTEPS = 200000
 
 # Sum the number of elements in all parameters (weights) of the model
 total_params = sum(p.numel() for p in student_model.policy.parameters())
 
 print(f"Total number of weights in the model: {total_params}")
+print(type(student_model.policy.parameters()))
+for i in range(1,2000):
+  observation = np.random.rand(1, 64)
+  print(observation)
+  student_action_logits = student_model.policy.forward(torch.tensor(observation).float())
+  student_action_logits2 = model.policy.forward(torch.tensor(observation).float())
+  optimizer = torch.optim.Adam(student_model.policy.parameters(), lr=3e-4)
+  optimizer.zero_grad()
+  loss=[0,0]
+  loss[0]=student_action_logits2[1]-student_action_logits[1]
+  loss[1]=student_action_logits2[2]-student_action_logits[2]
+  loss[0].backward()
+  loss[1].backward()
+  optimizer.step()
 
+for name,param in student_model.policy.named_parameters():
+        if param.grad is not None:
+            print(f"{name},{param}")
 student_action_logits = student_model.policy.forward(torch.tensor([[1 ,1 ,1 ,1 , 1 ,1 ,1 ,1,1 ,1 ,1 ,1 , 1 ,1 ,1 ,1,1 ,1 ,1 ,1 , 1 ,1 ,1 ,1,1 ,1 ,1 ,1 , 1 ,1 ,1 ,1,1 ,1 ,1 ,3 , 1 ,1 ,27,1,1 ,1 ,1 ,1 , 1 ,1 ,1 ,1,1 ,1 ,1 ,1 , 1 ,1 ,1 ,1,1 ,1 ,1 ,1 , 1 ,1 ,1 ,1]]).float())
-print(student_action_logits)
+student_action_logits2 = student_model2.policy.forward(torch.tensor([[1 ,1 ,1 ,1 , 1 ,1 ,1 ,1,1 ,1 ,1 ,1 , 1 ,1 ,1 ,1,1 ,1 ,1 ,1 , 1 ,1 ,1 ,1,1 ,1 ,1 ,1 , 1 ,1 ,1 ,1,1 ,1 ,1 ,3 , 1 ,1 ,27,1,1 ,1 ,1 ,1 , 1 ,1 ,1 ,1,1 ,1 ,1 ,1 , 1 ,1 ,1 ,1,1 ,1 ,1 ,1 , 1 ,1 ,1 ,1]]).float())
+optimizer.zero_grad()
+#loss=student_action_logits2[1]-student_action_logits[1]
+#loss.backward()
+#optimizer.step()
+
+
+for name,param in student_model.policy.named_parameters():
+        if param.grad is not None:
+            print(f"{name},{param}")
