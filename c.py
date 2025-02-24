@@ -5,10 +5,9 @@ eng = cityflow.Engine("/content/CityFlow2/examples/config.json", thread_num=1)
 print("CityFlow installed successfully!")
 
 import numpy as np
-cell_nums=12
-
-cell_lengths=np.array([0,49,109,149,199,220,234,240,250,255,260,265,269])
-cell_lengths=np.array([0,49,109,149,199,220,234,240,250,255,260,265,269])
+cell_nums=8
+import gymnasium as gym
+cell_lengths=np.array([0,49,109,149,199,234,255,265,269])
 
 def cell (road_id):
    cell_1=np.zeros(cell_nums)
@@ -27,10 +26,9 @@ print(cell("road_0_1_0"))
 
 
 import numpy as np
-cell_nums=12
+cell_nums=8
 
 cell_lengths=np.array([0,4,14,35,70,120,160,220,269])
-cell_lengths=np.array([0,4,10,14,20,25,35,48,70,120,160,220,269])
 def cell2 (road_id):
    cell_1=np.zeros(cell_nums)
    for vehicle in eng.get_vehicles():
@@ -61,7 +59,7 @@ class CityFlowEnv(gym.Env):
     def __init__(self):
         super(CityFlowEnv, self).__init__()
         self.action_space = Discrete(8)
-        self.observation_space = Box(low=0.0,high=1.0,shape=(8,12), dtype=np.float32)
+        self.observation_space = Box(low=0.0,high=1.0,shape=(8,8), dtype=np.float32)
 
     def step(self, action):
         eng.set_tl_phase("intersection_1_1",action )
@@ -139,13 +137,13 @@ from typing import Tuple
 class EncoderLayer(nn.Module):
     def __init__(self):
         super(EncoderLayer, self).__init__()
-        self.norm1 = nn.LayerNorm(12)
-        self.norm2 = nn.LayerNorm(12)
+        self.norm1 = nn.LayerNorm(8)
+        self.norm2 = nn.LayerNorm(8)
 
         self.dropout1 = nn.Dropout(0.1)
         self.dropout2 = nn.Dropout(0.1)
-        self.self_attn = nn.MultiheadAttention(embed_dim=12, num_heads=1)
-        self.model=nn.Sequential(nn.Linear(12,32),nn.Tanh(),nn.Linear(32,32),nn.Tanh(),nn.Linear(32,12),nn.Tanh())
+        self.self_attn = nn.MultiheadAttention(embed_dim=8, num_heads=1)
+        self.model=nn.Sequential(nn.Linear(8,12),nn.Linear(12,8),nn.Tanh())
 
 
 
@@ -166,8 +164,12 @@ class SelfAttention(nn.Module):
         super(SelfAttention, self).__init__()
         self.latent_dim_pi = 8
         self.latent_dim_vf = 8
-        self.model1=nn.Sequential(nn.Linear(96,8),nn.Tanh())
-        self.model2=nn.Sequential(nn.Linear(96,8),nn.Tanh())
+        self.model1=nn.Sequential(nn.Linear(64,8),nn.Tanh())
+        self.model2=nn.Sequential(nn.Linear(64,8),nn.Tanh())
+        self.model3=nn.Sequential(nn.Linear(64,64),nn.Tanh())
+        self.model4=nn.Sequential(nn.Linear(64,64),nn.Tanh())
+        self.model5=nn.Sequential(nn.Linear(64,64),nn.Tanh())
+        self.model6=nn.Sequential(nn.Linear(64,64),nn.Tanh())
         self.encoderlayer1=EncoderLayer()
         self.encoderlayer2=EncoderLayer()
         self.encoderlayer3=EncoderLayer()
@@ -189,18 +191,21 @@ class SelfAttention(nn.Module):
 
     def forward_actor(self, x: th.Tensor) -> th.Tensor:
         x=self.encoderlayer1(x)
-        x=self.encoderlayer2(x)
-        x=self.encoderlayer3(x)
-
-        x=self.model1(x.reshape(-1,96))
+        #x=self.encoderlayer2(x)
+        #x=self.encoderlayer3(x)
+        x=self.model3(x.reshape(-1,64))
+        x=self.model4(x)
+        x=self.model1(x)
         return x
 
     def forward_critic(self, x: th.Tensor) -> th.Tensor:
 
         x=self.encoderlayer7(x)
-        x=self.encoderlayer8(x)
-        x=self.encoderlayer9(x)
-        x=self.model2(x.reshape(-1,96))
+        x=self.model5(x.reshape(-1,64))
+        x=self.model6(x)
+        #x=self.encoderlayer8(x)
+        #x=self.encoderlayer9(x)
+        x=self.model2(x)
       #  doc.add_paragraph(f"In-Projection Weights:\n{self.encoderlayer7.self_attn.in_proj_weight.data}")
        # doc.add_paragraph(f"Out-Projection Weights:\n{self.encoderlayer7.self_attn.out_proj.weight.data}")
 
