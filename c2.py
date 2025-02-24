@@ -274,37 +274,49 @@ student_model = PPO("MlpPolicy", env, verbose=1, tensorboard_log=session_log_dir
 student_model2 = PPO("MlpPolicy", env, verbose=1, tensorboard_log=session_log_dir)
 
 TIMESTEPS = 200000
+import torch
+import torch.nn as nn
+from torch.nn import Module
 
 # Sum the number of elements in all parameters (weights) of the model
 total_params = sum(p.numel() for p in student_model.policy.parameters())
-
+model=PPO.load("1740345039")
+print(model.policy)
 print(f"Total number of weights in the model: {total_params}")
 print(type(student_model.policy.parameters()))
+optimizer = torch.optim.Adam(student_model.policy.parameters(), lr=3e-2)
 for i in range(1,2000):
-  observation = np.random.rand(1, 64)
-  print(observation)
+  observation = 30*np.random.rand(1, 64).tolist()
+  #print(observation)
   student_action_logits = student_model.policy.forward(torch.tensor(observation).float())
   student_action_logits2 = model.policy.forward(torch.tensor(observation).float())
-  optimizer = torch.optim.Adam(student_model.policy.parameters(), lr=3e-4)
+  print(student_action_logits)
+  print(student_action_logits2)
   optimizer.zero_grad()
-  loss=[0,0]
-  loss[0]=student_action_logits2[1]-student_action_logits[1]
-  loss[1]=student_action_logits2[2]-student_action_logits[2]
-  loss[0].backward()
-  loss[1].backward()
+  #loss=[0,0]
+  #loss[0]=student_action_logits2[1]-student_action_logits[1]
+  #loss[1]=student_action_logits2[2]-student_action_logits[2]
+  loss1 = torch.nn.functional.mse_loss(student_action_logits[1]  , student_action_logits2[1])
+  #print(f"Loss at step {i}: {loss.item()}")
+  loss2 = torch.nn.functional.mse_loss(student_action_logits[2] , student_action_logits2[2])
+  #loss1.backward()
+  #loss2.backward()
   optimizer.step()
 
-for name,param in student_model.policy.named_parameters():
+  for name,param in student_model.policy.named_parameters():
         if param.grad is not None:
-            print(f"{name},{param}")
-student_action_logits = student_model.policy.forward(torch.tensor([[1 ,1 ,1 ,1 , 1 ,1 ,1 ,1,1 ,1 ,1 ,1 , 1 ,1 ,1 ,1,1 ,1 ,1 ,1 , 1 ,1 ,1 ,1,1 ,1 ,1 ,1 , 1 ,1 ,1 ,1,1 ,1 ,1 ,3 , 1 ,1 ,27,1,1 ,1 ,1 ,1 , 1 ,1 ,1 ,1,1 ,1 ,1 ,1 , 1 ,1 ,1 ,1,1 ,1 ,1 ,1 , 1 ,1 ,1 ,1]]).float())
-student_action_logits2 = student_model2.policy.forward(torch.tensor([[1 ,1 ,1 ,1 , 1 ,1 ,1 ,1,1 ,1 ,1 ,1 , 1 ,1 ,1 ,1,1 ,1 ,1 ,1 , 1 ,1 ,1 ,1,1 ,1 ,1 ,1 , 1 ,1 ,1 ,1,1 ,1 ,1 ,3 , 1 ,1 ,27,1,1 ,1 ,1 ,1 , 1 ,1 ,1 ,1,1 ,1 ,1 ,1 , 1 ,1 ,1 ,1,1 ,1 ,1 ,1 , 1 ,1 ,1 ,1]]).float())
-optimizer.zero_grad()
+            #print(name)
+            if name == 'mlp_extractor.policy_net.2.weight':
+                print(f"{name},{param}")
+
+  for name,param in model.policy.named_parameters():
+  
+            #print(name)
+            if name == 'mlp_extractor.policy_net.2.weight':
+                print(f"model{name},{param}")
+
 #loss=student_action_logits2[1]-student_action_logits[1]
 #loss.backward()
 #optimizer.step()
+model.policy
 
-
-for name,param in student_model.policy.named_parameters():
-        if param.grad is not None:
-            print(f"{name},{param}")
