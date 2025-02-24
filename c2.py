@@ -277,22 +277,23 @@ TIMESTEPS = 200000
 import torch
 import torch.nn as nn
 from torch.nn import Module
-
+from sklearn.metrics import accuracy_score
 # Sum the number of elements in all parameters (weights) of the model
 total_params = sum(p.numel() for p in student_model.policy.parameters())
 model=PPO.load("1740345039")
 print(model.policy)
 print(f"Total number of weights in the model: {total_params}")
 print(type(student_model.policy.parameters()))
-optimizer = torch.optim.Adam(student_model.policy.parameters(), lr=3e-2)
+optimizer = torch.optim.Adam(student_model.policy.parameters(), lr=0.3)
 for i in range(1,2000):
   observation = 30*np.random.rand(1, 64).tolist()
   #print(observation)
   student_action_logits = student_model.policy.forward(torch.tensor(observation).float())
   student_action_logits2 = model.policy.forward(torch.tensor(observation).float())
-  print(student_action_logits)
-  print(student_action_logits2)
+  #print(student_action_logits)
+  #print(student_action_logits2)
   optimizer.zero_grad()
+  accuracy=accuracy_score(student_action_logits[0] , student_action_logits2[0])
   #loss=[0,0]
   #loss[0]=student_action_logits2[1]-student_action_logits[1]
   #loss[1]=student_action_logits2[2]-student_action_logits[2]
@@ -300,23 +301,21 @@ for i in range(1,2000):
   #print(f"Loss at step {i}: {loss.item()}")
   loss2 = torch.nn.functional.mse_loss(student_action_logits[2] , student_action_logits2[2])
   #loss1.backward()
-  #loss2.backward()
+  loss2.backward()
   optimizer.step()
-
+  print(f"Iteration {i}: Loss1 = {loss1.item():.4f},Loss2 = {loss2.item():.4f}, Accuracy = {accuracy:.2f}%")
   for name,param in student_model.policy.named_parameters():
         if param.grad is not None:
             #print(name)
             if name == 'mlp_extractor.policy_net.2.weight':
                 print(f"{name},{param}")
 
-  for name,param in model.policy.named_parameters():
+ # for name,param in model.policy.named_parameters():
   
             #print(name)
-            if name == 'mlp_extractor.policy_net.2.weight':
-                print(f"model{name},{param}")
+        #    if name == 'mlp_extractor.policy_net.2.weight':
+               # print(f"model{name},{param}")
 
 #loss=student_action_logits2[1]-student_action_logits[1]
 #loss.backward()
 #optimizer.step()
-model.policy
-
