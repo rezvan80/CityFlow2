@@ -397,8 +397,8 @@ if not os.path.exists(logdir):
 
 env = CityFlowEnv2()
 env.reset()
-
-model = PPO(CustomPolicy, env, verbose=1, tensorboard_log=session_log_dir)
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = PPO(CustomPolicy, env, verbose=1, tensorboard_log=session_log_dir,device=device)
 
 TIMESTEPS = 200000
 
