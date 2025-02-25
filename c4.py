@@ -55,26 +55,23 @@ from collections import deque
 
 
 reward=[]
-import  gym
-from gym.spaces import Discrete
-from gym.spaces import Box
-import numpy as np
-
-import random
-import time
-from collections import deque
-
-reward=[]
 class CityFlowEnv2(gym.Env):
     def __init__(self):
         super(CityFlowEnv2, self).__init__()
         self.action_space = Discrete(8)
-        self.observation_space = Box(low=0.0,high=1.0,shape=(64,8), dtype=np.float32)
+        self.observation_space = Box(low=0.0,high=1.0,shape=(8,12), dtype=np.float32)
 
     def step(self, action):
         eng.set_tl_phase("intersection_1_1",action )
         eng.next_step()
-
+        road_0_1_0_celled_vehicle_nums=cell("road_0_1_0")
+        road_1_0_1_celled_vehicle_nums=cell("road_1_0_1")
+        road_2_1_2_celled_vehicle_nums=cell("road_2_1_2")
+        road_1_2_3_celled_vehicle_nums=cell("road_1_2_3")
+        road_1_1_0_celled_vehicle_nums=cell("road_1_1_0")
+        road_1_1_1_celled_vehicle_nums=cell("road_1_1_1")
+        road_1_1_3_celled_vehicle_nums=cell("road_1_1_3")
+        road_1_1_2_celled_vehicle_nums=cell("road_1_1_2")
         observation=np.array([cell("road_0_1_0_0"),
               cell("road_1_0_1_0"),
               cell("road_2_1_2_0"),
@@ -270,13 +267,12 @@ class SelfAttention(nn.Module):
         super(SelfAttention, self).__init__()
         self.latent_dim_pi = 8
         self.latent_dim_vf = 8
-        self.self_attn = nn.MultiheadAttention(embed_dim=8, num_heads=1)
-        self.model1=nn.Sequential(nn.Linear(48,8),nn.Tanh())
-        self.model2=nn.Sequential(nn.Linear(48,8),nn.Tanh())
-        self.model3=nn.Sequential(nn.Linear(128,64),nn.Tanh())
-        self.model4=nn.Sequential(nn.Linear(64,48),nn.Tanh())
-        self.model5=nn.Sequential(nn.Linear(128,64),nn.Tanh())
-        self.model6=nn.Sequential(nn.Linear(64,48),nn.Tanh())
+        self.model1=nn.Sequential(nn.Linear(64,8),nn.Tanh())
+        self.model2=nn.Sequential(nn.Linear(64,8),nn.Tanh())
+        self.model3=nn.Sequential(nn.Linear(512,64),nn.Tanh())
+        self.model4=nn.Sequential(nn.Linear(64,64),nn.Tanh())
+        self.model5=nn.Sequential(nn.Linear(512,64),nn.Tanh())
+        self.model6=nn.Sequential(nn.Linear(64,64),nn.Tanh())
         self.encoderlayer1=EncoderLayer()
         self.encoderlayer2=EncoderLayer()
         self.encoderlayer3=EncoderLayer()
@@ -297,32 +293,28 @@ class SelfAttention(nn.Module):
 
 
     def forward_actor(self, x: th.Tensor) -> th.Tensor:
-        x1=self.encoderlayer1(x)
-        #x1=self.self_attn(x,x,x)
+        x=self.encoderlayer1(x)
         #x=self.encoderlayer2(x)
         #x=self.encoderlayer3(x)
-        x1 = torch.cat((x1.reshape(-1,64), x.reshape(-1,64)), dim=1)
-        x1=self.model3(x1)
-        x1=self.model4(x1)
-        x1=self.model1(x1)
-        return x1
+        x=self.model3(x.reshape(-1,512))
+        x=self.model4(x)
+        x=self.model1(x)
+        return x
 
     def forward_critic(self, x: th.Tensor) -> th.Tensor:
 
-        x1=self.encoderlayer7(x)
-        #x1=self.self_attn(x,x,x)
-        x1 = torch.cat((x1.reshape(-1,64),x.reshape(-1,64)), dim=1)
-        x1=self.model5(x1)
-        x1=self.model6(x1)
+        x=self.encoderlayer7(x)
+        x=self.model5(x.reshape(-1,512))
+        x=self.model6(x)
         #x=self.encoderlayer8(x)
         #x=self.encoderlayer9(x)
-        x1=self.model2(x1)
+        x=self.model2(x)
       #  doc.add_paragraph(f"In-Projection Weights:\n{self.encoderlayer7.self_attn.in_proj_weight.data}")
        # doc.add_paragraph(f"Out-Projection Weights:\n{self.encoderlayer7.self_attn.out_proj.weight.data}")
 
 
        # print("Weights have been saved to weights_log.docx")
-        return x1
+        return x
 
 
 
@@ -396,7 +388,7 @@ if not os.path.exists(logdir):
 env = CityFlowEnv2()
 env.reset()
 
-model = PPO('MlpPolicy', env, verbose=1, tensorboard_log=session_log_dir)
+model = PPO(CustomPolicy, env, verbose=1, tensorboard_log=session_log_dir)
 
 TIMESTEPS = 200000
 
