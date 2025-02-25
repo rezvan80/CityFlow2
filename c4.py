@@ -59,7 +59,7 @@ class CityFlowEnv2(gym.Env):
     def __init__(self):
         super(CityFlowEnv2, self).__init__()
         self.action_space = Discrete(8)
-        self.observation_space = Box(low=0.0,high=1.0,shape=(8,12), dtype=np.float32)
+        self.observation_space = Box(low=0.0,high=1.0,shape=(64,8), dtype=np.float32)
 
     def step(self, action):
         eng.set_tl_phase("intersection_1_1",action )
@@ -246,7 +246,7 @@ class EncoderLayer(nn.Module):
         self.dropout1 = nn.Dropout(0.1)
         self.dropout2 = nn.Dropout(0.1)
         self.self_attn = nn.MultiheadAttention(embed_dim=8, num_heads=1)
-        self.model=nn.Sequential(nn.Linear(8,12),nn.Linear(12,8),nn.Tanh())
+        self.model=nn.Sequential(nn.Linear(8,12),nn.Linear(12,12),nn.Tanh(),nn.Linear(12,8),nn.Tanh())
 
 
 
@@ -265,8 +265,12 @@ class EncoderLayer(nn.Module):
 class SelfAttention(nn.Module):
     def __init__(self, d, d_q, d_k, d_v):
         super(SelfAttention, self).__init__()
-        self.latent_dim_pi = 8
-        self.latent_dim_vf = 8
+        self.latent_dim_pi = 64
+        self.latent_dim_vf = 64
+        self.norm1 = nn.LayerNorm(8)
+        self.norm2 = nn.LayerNorm(8)
+        self.self_attn1 = nn.MultiheadAttention(embed_dim=8, num_heads=1)
+        self.self_attn2 = nn.MultiheadAttention(embed_dim=8, num_heads=1)
         self.model1=nn.Sequential(nn.Linear(64,8),nn.Tanh())
         self.model2=nn.Sequential(nn.Linear(64,8),nn.Tanh())
         self.model3=nn.Sequential(nn.Linear(512,64),nn.Tanh())
@@ -294,21 +298,27 @@ class SelfAttention(nn.Module):
 
     def forward_actor(self, x: th.Tensor) -> th.Tensor:
         x=self.encoderlayer1(x)
-        #x=self.encoderlayer2(x)
-        #x=self.encoderlayer3(x)
+        x=self.encoderlayer2(x)
+        x=self.encoderlayer3(x)
+        #attn_output, _ = self.self_attn1(x, x, x)
+        #x = x + attn_output
+        #x = self.norm1(x)
         x=self.model3(x.reshape(-1,512))
-        x=self.model4(x)
-        x=self.model1(x)
+       # x=self.model4(x)
+       # x=self.model1(x)
         return x
 
     def forward_critic(self, x: th.Tensor) -> th.Tensor:
-
+        #attn_output, _ = self.self_attn2(x, x, x)
+        #x = x + attn_output
+        #x = self.norm2(x)
         x=self.encoderlayer7(x)
+        #x=self.model5(x.reshape(-1,512))
+       # x=self.model6(x)
+        x=self.encoderlayer8(x)
+        x=self.encoderlayer9(x)
         x=self.model5(x.reshape(-1,512))
-        x=self.model6(x)
-        #x=self.encoderlayer8(x)
-        #x=self.encoderlayer9(x)
-        x=self.model2(x)
+      #  x=self.model2(x)
       #  doc.add_paragraph(f"In-Projection Weights:\n{self.encoderlayer7.self_attn.in_proj_weight.data}")
        # doc.add_paragraph(f"Out-Projection Weights:\n{self.encoderlayer7.self_attn.out_proj.weight.data}")
 
