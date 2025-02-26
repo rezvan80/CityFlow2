@@ -240,13 +240,13 @@ from typing import Tuple
 class EncoderLayer(nn.Module):
     def __init__(self):
         super(EncoderLayer, self).__init__()
-        self.norm1 = nn.LayerNorm(8)
-        self.norm2 = nn.LayerNorm(8)
+        self.norm1 = nn.LayerNorm(16)
+        self.norm2 = nn.LayerNorm(16)
 
         self.dropout1 = nn.Dropout(0.1)
         self.dropout2 = nn.Dropout(0.1)
-        self.self_attn = nn.MultiheadAttention(embed_dim=8, num_heads=1)
-        self.model=nn.Sequential(nn.Linear(8,12),nn.Linear(12,12),nn.Tanh(),nn.Linear(12,8),nn.Tanh())
+        self.self_attn = nn.MultiheadAttention(embed_dim=16, num_heads=1)
+        self.model=nn.Sequential(nn.Linear(16,32),nn.Linear(32,16),nn.Tanh())
 
 
 
@@ -265,27 +265,27 @@ class EncoderLayer(nn.Module):
 class SelfAttention(nn.Module):
     def __init__(self, d, d_q, d_k, d_v):
         super(SelfAttention, self).__init__()
-        self.latent_dim_pi = 64
-        self.latent_dim_vf = 64
-        self.norm1 = nn.LayerNorm(8)
-        self.norm2 = nn.LayerNorm(8)
-        self.self_attn1 = nn.MultiheadAttention(embed_dim=8, num_heads=1)
-        self.self_attn2 = nn.MultiheadAttention(embed_dim=8, num_heads=1)
-        self.model1=nn.Sequential(nn.Linear(64,8),nn.Tanh())
-        self.model2=nn.Sequential(nn.Linear(64,8),nn.Tanh())
-        self.model3=nn.Sequential(nn.Linear(512,64),nn.Tanh())
-        self.model4=nn.Sequential(nn.Linear(64,64),nn.Tanh())
-        self.model5=nn.Sequential(nn.Linear(512,64),nn.Tanh())
-        self.model6=nn.Sequential(nn.Linear(64,64),nn.Tanh())
+        self.latent_dim_pi = 24
+        self.latent_dim_vf = 24
+       # self.norm1 = nn.LayerNorm(8)
+       # self.norm2 = nn.LayerNorm(8)
+      #  self.self_attn1 = nn.MultiheadAttention(embed_dim=8, num_heads=1)
+       # self.self_attn2 = nn.MultiheadAttention(embed_dim=8, num_heads=1)
+      #  self.model1=nn.Sequential(nn.Linear(64,8),nn.Tanh())
+       # self.model2=nn.Sequential(nn.Linear(64,8),nn.Tanh())
+        self.model3=nn.Sequential(nn.Linear(512,24),nn.Tanh())
+      #  self.model4=nn.Sequential(nn.Linear(64,64),nn.Tanh())
+        self.model5=nn.Sequential(nn.Linear(512,24),nn.Tanh())
+       # self.model6=nn.Sequential(nn.Linear(64,64),nn.Tanh())
         self.encoderlayer1=EncoderLayer()
         self.encoderlayer2=EncoderLayer()
-        self.encoderlayer3=EncoderLayer()
+       # self.encoderlayer3=EncoderLayer()
       #  self.encoderlayer4=EncoderLayer()
      #   self.encoderlayer5=EncoderLayer()
        # self.encoderlayer6=EncoderLayer()
         self.encoderlayer7=EncoderLayer()
         self.encoderlayer8=EncoderLayer()
-        self.encoderlayer9=EncoderLayer()
+       # self.encoderlayer9=EncoderLayer()
        # self.encoderlayer10=EncoderLayer()
       #  self.encoderlayer11=EncoderLayer()
       #  self.encoderlayer12=EncoderLayer()
@@ -297,9 +297,9 @@ class SelfAttention(nn.Module):
 
 
     def forward_actor(self, x: th.Tensor) -> th.Tensor:
-        x=self.encoderlayer1(x)
+        x=self.encoderlayer1(x.reshape(-1,16))
         x=self.encoderlayer2(x)
-        x=self.encoderlayer3(x)
+        #x=self.encoderlayer3(x)
         #attn_output, _ = self.self_attn1(x, x, x)
         #x = x + attn_output
         #x = self.norm1(x)
@@ -312,11 +312,11 @@ class SelfAttention(nn.Module):
         #attn_output, _ = self.self_attn2(x, x, x)
         #x = x + attn_output
         #x = self.norm2(x)
-        x=self.encoderlayer7(x)
+        x=self.encoderlayer7(x.reshape(-1,16))
         #x=self.model5(x.reshape(-1,512))
        # x=self.model6(x)
         x=self.encoderlayer8(x)
-        x=self.encoderlayer9(x)
+        #x=self.encoderlayer9(x)
         x=self.model5(x.reshape(-1,512))
       #  x=self.model2(x)
       #  doc.add_paragraph(f"In-Projection Weights:\n{self.encoderlayer7.self_attn.in_proj_weight.data}")
@@ -397,8 +397,8 @@ if not os.path.exists(logdir):
 
 env = CityFlowEnv2()
 env.reset()
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = PPO(CustomPolicy, env, verbose=1, tensorboard_log=session_log_dir,device=device)
+
+model = PPO(CustomPolicy, env, verbose=1, tensorboard_log=session_log_dir)
 
 TIMESTEPS = 200000
 
