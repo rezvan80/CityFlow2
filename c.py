@@ -643,7 +643,6 @@ print(model1.policy.forward(torch.tensor(X).float(),deterministic=True))
 print(student_model.policy)
 print(f"Total number of weights in the model: {total_params}")
 print(type(student_model.policy.parameters()))
-optimizer = torch.optim.Adam(student_model.policy.parameters(), lr=0.0003)
 mse_loss = nn.MSELoss()
 
 criterion = nn.MSELoss()
@@ -657,8 +656,8 @@ X = torch.randint(0, 20, (1000,8,8))
 X1=np.save("tensor2.npy", np.array(observations2))
 X=np.save("tensor3.npy", np.array(observations3))
 
-X1=np.load("tensor2.npy", np.array(observations2))
-X=np.load("tensor3.npy", np.array(observations3))
+X1=np.load("tensor2.npy")
+X=np.load("tensor3.npy")
 
 # Load the saved tensor
 #X = np.load("tensor.npy")
@@ -685,6 +684,8 @@ dataloader = DataLoader(dataset, batch_size=20, shuffle=True)
 print(dataset)
 for param in model.policy.parameters():
     param.requires_grad = False
+optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, student_model.policy.parameters()), lr=0.0003)
+
 for epoch in range(epochs):
   a=0
   t1= 0
@@ -732,5 +733,4 @@ for epoch in range(epochs):
 env = CityFlowEnv()
 env.reset()
 student_model.learn(total_timesteps=200000, reset_num_timesteps=False, tb_log_name=f"PPO")
-
 
