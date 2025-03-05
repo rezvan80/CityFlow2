@@ -684,10 +684,9 @@ dataloader = DataLoader(dataset, batch_size=20, shuffle=True)
 print(dataset)
 for param in model.policy.parameters():
     param.requires_grad = False
-for name , param in model.policy.named_parameters():
-    param.requires_grad = False
-    print(name)
-optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, student_model.policy.parameters()), lr=0.0003)
+ 
+#optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, student_model.policy.parameters()), lr=0.0003)
+optimizer = torch.optim.Adam(student_model.policy.parameters(), lr=0.0003)
 
 for epoch in range(epochs):
   a=0
@@ -735,4 +734,8 @@ for epoch in range(epochs):
   print(f"t1:{t2}")
 env = CityFlowEnv()
 env.reset()
+for name , param in student_model.policy.named_parameters():
+    param.requires_grad = False
+    if name == "mlp_extractor.model1.0.weight":
+       param.requires_grad = True   
 student_model.learn(total_timesteps=200000, reset_num_timesteps=False, tb_log_name=f"PPO")
