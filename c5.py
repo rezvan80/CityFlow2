@@ -276,7 +276,7 @@ class CityFlowEnv2(gym.Env):
     def __init__(self):
         super(CityFlowEnv2, self).__init__()
         self.action_space = Discrete(8)
-        self.observation_space = Box(low=0.0,high=1.0,shape=(8,12), dtype=np.float32)
+        self.observation_space = Box(low=0.0,high=1.0,shape=(64,8), dtype=np.float32)
 
     def step(self, action):
         eng.set_tl_phase("intersection_1_1",action )
@@ -453,6 +453,39 @@ import torch.nn.functional as F
 from stable_baselines3.common.policies import ActorCriticPolicy
 from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
 from typing import Tuple
+
+class PositionalEncoding(nn.Module):
+    def __init__(self, d_model, max_len=64):
+        """
+        Args:
+            d_model: Dimension of the embeddings (must match the model's embedding size).
+            max_len: Maximum sequence length (default is 5000).
+        """
+        super(PositionalEncoding, self).__init__()
+        
+        # Create a positional encoding matrix with shape (max_len, d_model)
+        pe = torch.zeros(max_len, d_model)
+        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)  # (max_len, 1)
+        
+        # Compute the positional encodings (sin for even indices, cos for odd)
+        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        
+        # Add batch dimension and register as a buffer (ensures it is not updated during training)
+        pe = pe.unsqueeze(0)  # Shape: (1, max_len, d_model)
+        self.register_buffer('pe', pe)
+
+    def forward(self, x):
+        """
+        Args:
+            x: Input tensor of shape (batch_size, seq_len, d_model).
+        
+        Returns:
+            Tensor of the same shape as `x` with positional encodings added.
+        """
+        x = x + self.pe[:, :x.size(1), :]
+        return x
 # Custom Self-Attention Network
 class EncoderLayer(nn.Module):
     def __init__(self):
@@ -518,6 +551,7 @@ class SelfAttention(nn.Module):
 
 
     def forward_actor(self, x: th.Tensor) -> th.Tensor:
+        x=PositionalEncoding(d_model=8)(x)
         x=self.encoderlayer1(x)
         x=self.encoderlayer2(x)
         x=self.encoderlayer3(x)
@@ -534,6 +568,7 @@ class SelfAttention(nn.Module):
         return x
 
     def forward_critic(self, x: th.Tensor) -> th.Tensor:
+        x=PositionalEncoding(d_model=8)(x)
         x=self.encoderlayer13(x)
         x=self.encoderlayer14(x)
         x=self.encoderlayer15(x)
@@ -620,6 +655,7 @@ env.reset()
 student_model = PPO(CustomPolicy, env, verbose=1, tensorboard_log=session_log_dir)
 
 student_model2 = PPO("MlpPolicy", env, verbose=1, tensorboard_log=session_log_dir)
+student_model.learn(total_timesteps=200000, reset_num_timesteps=False, tb_log_name=f"PPO")
 
 TIMESTEPS = 20000
 import torch
@@ -732,7 +768,7 @@ for epoch in range(epochs):
   print(a/1024)
   print(f"t1:{t1}")
   print(f"t1:{t2}")
-env = CityFlowEnv()
+env = CityFlowEnv2()
 env.reset()
 for name , param in student_model.policy.named_parameters():
     param.requires_grad = False
