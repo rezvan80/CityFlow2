@@ -151,7 +151,7 @@ class CityFlowEnv(gym.Env):
               cell2("road_1_1_1_7"),
               cell2("road_1_1_3_7"),
               cell2("road_1_1_2_7")])
-        self.reward=1/sum(eng.get_lane_vehicle_count().values())
+        self.reward=1/sum(get_lane_waiting_vehicle_count().values())
         reward.append(self.reward)
         avg_reward=sum(reward)/len(reward)
 
@@ -322,7 +322,7 @@ class CityFlowEnv2(gym.Env):
               cell("road_1_0_1_7"),
               cell("road_2_1_2_7"),
               cell("road_1_2_3_7")])
-        self.reward=1/sum(eng.get_lane_vehicle_count().values())
+        self.reward=1/(sum(eng.get_lane_waiting_vehicle_count().values())+1)
         reward.append(self.reward)
         avg_reward=sum(reward)/len(reward)
 
@@ -392,7 +392,7 @@ from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
 from typing import Tuple
 
 class PositionalEncoding(nn.Module):
-    def __init__(self, d_model, max_len=64):
+    def __init__(self, d_model, max_len=32):
         """
         Args:
             d_model: Dimension of the embeddings (must match the model's embedding size).
