@@ -276,7 +276,7 @@ class CityFlowEnv2(gym.Env):
     def __init__(self):
         super(CityFlowEnv2, self).__init__()
         self.action_space = Discrete(8)
-        self.observation_space = Box(low=0.0,high=1.0,shape=(64,8), dtype=np.float32)
+        self.observation_space = Box(low=0.0,high=1.0,shape=(32,8), dtype=np.float32)
 
     def step(self, action):
         eng.set_tl_phase("intersection_1_1",action )
@@ -293,66 +293,35 @@ class CityFlowEnv2(gym.Env):
               cell("road_1_0_1_0"),
               cell("road_2_1_2_0"),
               cell("road_1_2_3_0"),
-              cell("road_1_1_0_0"),
-              cell("road_1_1_1_0"),
-              cell("road_1_1_3_0"),
-              cell("road_1_1_2_0"),
               cell("road_0_1_0_1"),
               cell("road_1_0_1_1"),
               cell("road_2_1_2_1"),
               cell("road_1_2_3_1"),
-              cell("road_1_1_0_1"),
-              cell("road_1_1_1_1"),
-              cell("road_1_1_3_1"),
-              cell("road_1_1_2_1"),
               cell("road_0_1_0_2"),
               cell("road_1_0_1_2"),
               cell("road_2_1_2_2"),
               cell("road_1_2_3_2"),
-              cell("road_1_1_0_2"),
-              cell("road_1_1_1_2"),
-              cell("road_1_1_3_2"),
-              cell("road_1_1_2_2"),
             cell("road_0_1_0_0_3"),
               cell("road_1_0_1_3"),
               cell("road_2_1_2_3"),
               cell("road_1_2_3_3"),
-              cell("road_1_1_0_3"),
-              cell("road_1_1_1_3"),
-              cell("road_1_1_3_3"),
-              cell("road_1_1_2_3"),
            cell("road_0_1_0_4"),
               cell("road_1_0_1_4"),
               cell("road_2_1_2_4"),
               cell("road_1_2_3_4"),
-              cell("road_1_1_0_4"),
-              cell("road_1_1_1_4"),
-              cell("road_1_1_3_4"),
-              cell("road_1_1_2_4"),
          cell("road_0_1_0_5"),
               cell("road_1_0_1_5"),
               cell("road_2_1_2_5"),
               cell("road_1_2_3_5"),
-              cell("road_1_1_0_5"),
-              cell("road_1_1_1_5"),
-              cell("road_1_1_3_5"),
-              cell("road_1_1_2_5"),
+
           cell("road_0_1_0_6"),
               cell("road_1_0_1_6"),
               cell("road_2_1_2_6"),
               cell("road_1_2_3_6"),
-              cell("road_1_1_0_6"),
-              cell("road_1_1_1_6"),
-              cell("road_1_1_3_6"),
-              cell("road_1_1_2_6"),
           cell("road_0_1_0_7"),
               cell("road_1_0_1_7"),
               cell("road_2_1_2_7"),
-              cell("road_1_2_3_7"),
-              cell("road_1_1_0_7"),
-              cell("road_1_1_1_7"),
-              cell("road_1_1_3_7"),
-              cell("road_1_1_2_7")])
+              cell("road_1_2_3_7")])
         self.reward=1/sum(eng.get_lane_vehicle_count().values())
         reward.append(self.reward)
         avg_reward=sum(reward)/len(reward)
@@ -375,66 +344,34 @@ class CityFlowEnv2(gym.Env):
               cell("road_1_0_1_0"),
               cell("road_2_1_2_0"),
               cell("road_1_2_3_0"),
-              cell("road_1_1_0_0"),
-              cell("road_1_1_1_0"),
-              cell("road_1_1_3_0"),
-              cell("road_1_1_2_0"),
               cell("road_0_1_0_1"),
               cell("road_1_0_1_1"),
               cell("road_2_1_2_1"),
               cell("road_1_2_3_1"),
-              cell("road_1_1_0_1"),
-              cell("road_1_1_1_1"),
-              cell("road_1_1_3_1"),
-              cell("road_1_1_2_1"),
               cell("road_0_1_0_2"),
               cell("road_1_0_1_2"),
               cell("road_2_1_2_2"),
               cell("road_1_2_3_2"),
-              cell("road_1_1_0_2"),
-              cell("road_1_1_1_2"),
-              cell("road_1_1_3_2"),
-              cell("road_1_1_2_2"),
             cell("road_0_1_0_0_3"),
               cell("road_1_0_1_3"),
               cell("road_2_1_2_3"),
               cell("road_1_2_3_3"),
-              cell("road_1_1_0_3"),
-              cell("road_1_1_1_3"),
-              cell("road_1_1_3_3"),
-              cell("road_1_1_2_3"),
            cell("road_0_1_0_4"),
               cell("road_1_0_1_4"),
               cell("road_2_1_2_4"),
               cell("road_1_2_3_4"),
-              cell("road_1_1_0_4"),
-              cell("road_1_1_1_4"),
-              cell("road_1_1_3_4"),
-              cell("road_1_1_2_4"),
          cell("road_0_1_0_5"),
               cell("road_1_0_1_5"),
               cell("road_2_1_2_5"),
               cell("road_1_2_3_5"),
-              cell("road_1_1_0_5"),
-              cell("road_1_1_1_5"),
-              cell("road_1_1_3_5"),
-              cell("road_1_1_2_5"),
           cell("road_0_1_0_6"),
               cell("road_1_0_1_6"),
               cell("road_2_1_2_6"),
               cell("road_1_2_3_6"),
-              cell("road_1_1_0_6"),
-              cell("road_1_1_1_6"),
-              cell("road_1_1_3_6"),
-              cell("road_1_1_2_6"),
           cell("road_0_1_0_7"),
               cell("road_1_0_1_7"),
               cell("road_2_1_2_7"),
-              cell("road_1_2_3_7"),
-              cell("road_1_1_0_7"),
-              cell("road_1_1_1_7"),
-              cell("road_1_1_3_7"),
-              cell("road_1_1_2_7")])
+              cell("road_1_2_3_7")])
 
         return observation
 
@@ -517,8 +454,8 @@ class SelfAttention(nn.Module):
         super(SelfAttention, self).__init__()
         self.latent_dim_pi = 8
         self.latent_dim_vf = 8
-        self.model1=nn.Sequential(nn.Linear(512,8),nn.Tanh())
-        self.model2=nn.Sequential(nn.Linear(512,8),nn.Tanh())
+        self.model1=nn.Sequential(nn.Linear(256,8),nn.Tanh())
+        self.model2=nn.Sequential(nn.Linear(256,8),nn.Tanh())
         self.encoderlayer1=EncoderLayer()
         self.encoderlayer2=EncoderLayer()
         self.encoderlayer3=EncoderLayer()
@@ -564,7 +501,7 @@ class SelfAttention(nn.Module):
         #x=self.encoderlayer10(x)
         #x=self.encoderlayer11(x)
         #x=self.encoderlayer12(x)
-        x=self.model1(x.reshape(-1,512))
+        x=self.model1(x.reshape(-1,256))
         return x
 
     def forward_critic(self, x: th.Tensor) -> th.Tensor:
@@ -581,7 +518,7 @@ class SelfAttention(nn.Module):
         #x=self.encoderlayer22(x)
         #x=self.encoderlayer23(x)
         #x=self.encoderlayer24(x)
-        x=self.model2(x.reshape(-1,512))
+        x=self.model2(x.reshape(-1,256))
       #  doc.add_paragraph(f"In-Projection Weights:\n{self.encoderlayer7.self_attn.in_proj_weight.data}")
        # doc.add_paragraph(f"Out-Projection Weights:\n{self.encoderlayer7.self_attn.out_proj.weight.data}")
 
@@ -765,6 +702,7 @@ for epoch in range(epochs):
     #print(student_action_logits[0]-batch_labels0)
     
     optimizer.step()
+  print(f"epoch:{epoch}")
   print(a/1024)
   print(f"t1:{t1}")
   print(f"t1:{t2}")
